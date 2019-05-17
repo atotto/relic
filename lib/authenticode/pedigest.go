@@ -19,6 +19,7 @@ package authenticode
 import (
 	"bytes"
 	"crypto"
+	"unsafe"
 	"debug/pe"
 	"encoding/binary"
 	"errors"
@@ -223,6 +224,12 @@ func readOptHeader(r io.Reader, d io.Writer, peStart int64, fh *pe.FileHeader) (
 	case 0x10b:
 		// PE32
 		var opt pe.OptionalHeader32
+		var size = unsafe.Sizeof(opt)
+		if len(buf) < int(size) {
+			b := make([]byte, size, size)
+			copy(b, buf)
+			buf = b
+		}
 		if err := binaryReadBytes(buf, &opt); err != nil {
 			return nil, err
 		}
@@ -236,6 +243,12 @@ func readOptHeader(r io.Reader, d io.Writer, peStart int64, fh *pe.FileHeader) (
 	case 0x20b:
 		// PE32+
 		var opt pe.OptionalHeader64
+		var size = unsafe.Sizeof(opt)
+		if len(buf) < int(size) {
+			b := make([]byte, size, size)
+			copy(b, buf)
+			buf = b
+		}
 		if err := binaryReadBytes(buf, &opt); err != nil {
 			return nil, err
 		}
